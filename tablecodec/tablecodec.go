@@ -75,19 +75,19 @@ func DecodeRecordKey(key kv.Key) (tableID int64, handle int64, err error) {
 	/* Your code here */
 	//如果不是19位，抛出异常
 	if len(key) != 19 {
-		return 0,0,errors.New("wrong len")
+		return 0, 0, errors.New("wrong len")
 	}
 	//拿出tableID和handle对应的string
-	tableIDBytes := key[1:1+idLen]
+	tableIDBytes := key[1 : 1+idLen]
 	handleBytes := key[prefixLen : prefixLen+idLen]
 	//解析成对应int，并抛出异常
-	_,tableIDRes,errRes1 := codec.DecodeInt(tableIDBytes)
-	if errRes1 != nil{
-		return 0,0,errRes1
+	_, tableIDRes, errRes1 := codec.DecodeInt(tableIDBytes)
+	if errRes1 != nil {
+		return 0, 0, errRes1
 	}
-	_,handleRes,errRes2 := codec.DecodeInt(handleBytes)
-	if errRes2 != nil{
-		return 0,0,errRes2
+	_, handleRes, errRes2 := codec.DecodeInt(handleBytes)
+	if errRes2 != nil {
+		return 0, 0, errRes2
 	}
 	return tableIDRes, handleRes, nil
 }
@@ -113,14 +113,25 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 // The format of the key is "t[tableID]_i[idxID][encodedValue]".
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
 	/* Your code here */
-	//不知道长度为19会不会存在什么问题
+	//不知道长度为19会不会存在什么问题，==19说明indexValues为空，似乎没啥问题
 	if len(key) < 19 {
-		return 0,0,nil,errors.New("Wrong Parameters！")
+		return 0, 0, nil, errors.New("Wrong Parameters！")
+	}
+	//解析对应byte数组
+	tableIDBytes := key[tablePrefixLength : tablePrefixLength+idLen]
+	indexIDBytes := key[prefixLen : prefixLen+idLen]
+	indexValuesRes := key[RecordRowKeyLen:]
+	//解析成对应int64并抛出异常
+	_, tableIDRes, errRes1 := codec.DecodeInt(tableIDBytes)
+	if errRes1 != nil {
+		return 0, 0, nil, errRes1
+	}
+	_, indexIDRes, errRes2 := codec.DecodeInt(indexIDBytes)
+	if errRes2 != nil {
+		return 0, 0, nil, errRes2
 	}
 
-
-
-	return tableID, indexID, indexValues, nil
+	return tableIDRes, indexIDRes, indexValuesRes, nil
 }
 
 // DecodeIndexKey decodes the key and gets the tableID, indexID, indexValues.
