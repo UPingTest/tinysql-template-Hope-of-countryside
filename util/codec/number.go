@@ -23,6 +23,7 @@ import (
 const signMask uint64 = 0x8000000000000000
 
 // EncodeIntToCmpUint make int v to comparable uint type
+// 如果是负的变成正的，如果是正的最高位变成1，相当于向正半轴平移了
 func EncodeIntToCmpUint(v int64) uint64 {
 	return uint64(v) ^ signMask
 }
@@ -36,8 +37,11 @@ func DecodeCmpUintToInt(u uint64) int64 {
 // EncodeInt guarantees that the encoded value is in ascending order for comparison.
 func EncodeInt(b []byte, v int64) []byte {
 	var data [8]byte
+	//转换成无符号64位int
 	u := EncodeIntToCmpUint(v)
+	//将无符号64位放到data切片中
 	binary.BigEndian.PutUint64(data[:], u)
+	//将data添加到b的后面
 	return append(b, data[:]...)
 }
 
